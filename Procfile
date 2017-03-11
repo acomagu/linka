@@ -1,1 +1,1 @@
-web: linka
+slackrtm: linka
