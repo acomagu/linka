@@ -47,7 +47,12 @@ func response(msg slack.Msg) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer c.Close()
+	defer func() {
+		err := c.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	words := strings.Split(msg.Text, " ")[1:]
 
@@ -94,7 +99,12 @@ func summary(url string) string {
 		log.Println(err)
 		return ""
 	}
-	defer res.Body.Close()
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	text, err := ioutil.ReadAll(res.Body)
 	if err != nil {
