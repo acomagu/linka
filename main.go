@@ -12,34 +12,29 @@ import (
 	"github.com/nlopes/slack"
 )
 
-const (
-	list = "list_"
-)
-
 func run(api *slack.Client) int {
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
-	for {
-		select {
-		case msg := <-rtm.IncomingEvents:
-			switch ev := msg.Data.(type) {
-			case *slack.MessageEvent:
-				if strings.Split(ev.Msg.Text, " ")[0] == "linka" {
-					log.Println(ev.Msg.Text)
-					msg, err := response(ev.Msg)
-					if err != nil {
-						log.Println(err)
-					}
-					rtm.SendMessage(rtm.NewOutgoingMessage(msg, ev.Channel))
+	for msg := range rtm.IncomingEvents {
+		switch ev := msg.Data.(type) {
+		case *slack.MessageEvent:
+			if strings.Split(ev.Msg.Text, " ")[0] == "linka" {
+				log.Println(ev.Msg.Text)
+				msg, err := response(ev.Msg)
+				if err != nil {
+					log.Println(err)
 				}
-
-			case *slack.InvalidAuthEvent:
-				log.Println("invalid cred")
-				return 1
+				rtm.SendMessage(rtm.NewOutgoingMessage(msg, ev.Channel))
 			}
+
+		case *slack.InvalidAuthEvent:
+			log.Println("invalid cred")
+			return 1
 		}
 	}
+	log.Println("rtm disconnected")
+	return 1
 }
 
 func response(msg slack.Msg) (string, error) {
